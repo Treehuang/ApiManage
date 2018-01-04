@@ -1,0 +1,26 @@
+{
+  "name": "ApiManage",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@git.easyops.local:anyclouds/ApiManage.git",
+  "author": "kinming <kinming@easyops.cn>",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "@easyops/git-exec-and-restage": "^1.0.4",
+    "husky": "^0.14.3",
+    "lint-staged": "^5.0.0"
+  },
+  "scripts": {
+    "precommit": "lint-staged",
+    "lint-staged": "lint-staged",
+    "format-php": "composer run format"
+  },
+  "lint-staged": {
+    "*.php": [
+      "php -l",
+      "git-exec-and-restage npm run format-php --"
+    ]
+  }
+}
+

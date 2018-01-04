@@ -1,0 +1,166 @@
+pipeline_flow_inputs:
+  - name: git_tag_name
+    type: string
+    memo: git_tag用于构建和生成版本号(git上发布的tag)
+  - name: APP_ID
+    type: string
+    memo: 应用ID
+  - name: PACKAGE_ID
+    type: string
+    memo: 程序包ID
+  - name: jenkins_job_url
+    type: string
+    memo: Jenkins上用于构建此应用的project的URL
+pipeline_template:
+  - stageId: 1
+    stageName: 构建
+    templateName: 构建
+    defaultTasks:
+    - taskName: 构建
+      defaultSteps:
+      - stepName: Jenkins构建项目
+        defaultToolId: f21f13f7dcb6ccb551d4b49e00d7c5bc
+        agents: 0.@
+        execUser: root
+        inputs:
+          git_tag_name: 0.git_tag_name
+          jenkins_job_url: 0.jenkins_job_url
+      - stepName: 打包
+        defaultToolId: 7f34be9f9be6e676e73a6e4d14c7b931
+        agents: ?-1.REMOTE_HOST
+        execUser: root
+        inputs:
+          app_name: ?-1.JOB_NAME
+          SRC_DIR: ?-1.WORKSPACE
+          version: 0.git_tag_name
+      - stepName: 上传程序包
+        defaultToolId: a92c6e84ad414cdab937174cbf72d4cd
+        agents: ?-2.REMOTE_HOST
+        execUser: root
+        inputs:
+          APP_ID: 0.APP_ID
+          version: 0.git_tag_name
+          PACKAGE_ID: 0.PACKAGE_ID
+          PACKAGE_PATH: ?-1.TAR_PATH
+    relate_cluster: 0
+  - stageId: 2
+    stageName: 测试
+    templateName: 测试
+    defaultTasks:
+    - taskName: 测试
+      defaultSteps:
+      - stepName: 测试集群查询
+        defaultToolId: 29f6ecad78defd5aac64a1d0246cc067
+        agents: 0.@
+        execUser: root
+        inputs:
+          cluster_id: "#."
+      - stepName: 测试环境检查
+        defaultToolId: d2b0e130cd1791565164d068dec12517
+        agents: ?-1.IP_LIST
+        execUser: root
+      - stepName: 测试环境发布
+        defaultToolId: 587cbc4c20fc5a132ccc0299268e6b85
+        agents: 0.@
+        execUser: root
+        inputs:
+          APP_ID: 0.APP_ID
+          cluster_id: "#."
+          PACKAGE_ID: 0.PACKAGE_ID
+      - stepName: 测试环境部署后检查
+        defaultToolId: 59dd7f6984ee6954ac4cee61d4324548
+        agents: 0.@
+        execUser: root
+        inputs:
+          DEVICE_LIST: ?-3.DEVICE_LIST
+          PACKAGE_ID: 0.PACKAGE_ID
+          INSTALLED_VERSION: ?-1.INSTALLED_VERSION
+      - stepName: 通知负责人
+        defaultToolId: 9c9b5c770676214a0dcff623d7b4d185
+        agents: 0.@
+        execUser: root
+        inputs:
+          APP_ID: 0.APP_ID
+          MESSAGE: ?-1.MESSAGE
+    relate_cluster: 3
+  - stageId: 3
+    stageName: 预发布
+    templateName: 预发布
+    defaultTasks:
+    - taskName: 预发布
+      defaultSteps:
+      - stepName: 预发布环境查询
+        defaultToolId: 29f6ecad78defd5aac64a1d0246cc067
+        agents: 0.@
+        execUser: root
+        inputs:
+          cluster_id: "#."
+      - stepName: 预发布环境检查
+        defaultToolId: d2b0e130cd1791565164d068dec12517
+        agents: ?-1.IP_LIST
+        execUser: root
+      - stepName: 预发布环境发布
+        defaultToolId: 587cbc4c20fc5a132ccc0299268e6b85
+        agents: 0.@
+        execUser: root
+        inputs:
+          APP_ID: 0.APP_ID
+          cluster_id: "#."
+          PACKAGE_ID: 0.PACKAGE_ID
+      - stepName: 预发布环境部署后检查
+        defaultToolId: 59dd7f6984ee6954ac4cee61d4324548
+        agents: 0.@
+        execUser: root
+        inputs:
+          DEVICE_LIST: ?-3.DEVICE_LIST
+          PACKAGE_ID: 0.PACKAGE_ID
+          INSTALLED_VERSION: ?-1.INSTALLED_VERSION
+      - stepName: 通知负责人
+        defaultToolId: 9c9b5c770676214a0dcff623d7b4d185
+        agents: 0.@
+        execUser: root
+        inputs:
+          APP_ID: 0.APP_ID
+          MESSAGE: ?-1.MESSAGE
+    relate_cluster: 2
+  - stageId: 4
+    stageName: 发布
+    templateName: 发布
+    defaultTasks:
+    - taskName: 发布
+      defaultSteps:
+      - stepName: 生产环境查询
+        defaultToolId: 29f6ecad78defd5aac64a1d0246cc067
+        agents: 0.@
+        execUser: root
+        inputs:
+          cluster_id: "#."
+      - stepName: 生产环境检查
+        defaultToolId: d2b0e130cd1791565164d068dec12517
+        agents: ?-1.IP_LIST
+        execUser: root
+      - stepName: 生产环境发布
+        defaultToolId: 587cbc4c20fc5a132ccc0299268e6b85
+        agents: 0.@
+        execUser: root
+        inputs:
+          APP_ID: 0.APP_ID
+          cluster_id: "#."
+          PACKAGE_ID: 0.PACKAGE_ID
+      - stepName: 生产环境部署后校验
+        defaultToolId: 59dd7f6984ee6954ac4cee61d4324548
+        agents: 0.@
+        execUser: root
+        inputs:
+          DEVICE_LIST: ?-3.DEVICE_LIST
+          PACKAGE_ID: 0.PACKAGE_ID
+          INSTALLED_VERSION: ?-1.INSTALLED_VERSION
+      - stepName: 通知负责人
+        defaultToolId: 9c9b5c770676214a0dcff623d7b4d185
+        agents: 0.@
+        execUser: root
+        inputs:
+          APP_ID: 0.APP_ID
+          MESSAGE: ?-1.MESSAGE
+    relate_cluster: 1
+

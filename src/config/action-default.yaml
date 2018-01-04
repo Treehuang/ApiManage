@@ -1,0 +1,9 @@
+default_action:
+    - id: deploy
+      name: 部署
+    - id: package
+      name: 打包
+    - id: offline
+      name: 下线
+    - id: online
+      name: 上线
