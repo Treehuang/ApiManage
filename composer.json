@@ -16,7 +16,6 @@
         "purekid/mongodm": "^1.5",
         "czproject/git-php": "*",
         "hoa/regex": "^1.0",
-        "predis/predis": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.4",
